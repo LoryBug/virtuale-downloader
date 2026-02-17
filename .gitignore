@@ -12,3 +12,6 @@ wheels/
 # Runtime data
 .browser_data/
 downloads/
+
+# IDE / tools
+.claude/
