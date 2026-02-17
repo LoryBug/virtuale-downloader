@@ -1,6 +1,6 @@
 # virtuale-downloader
 
-Scarica l'audio delle lezioni registrate da SharePoint UniBo, anche quando il download e' disabilitato dal docente. L'audio viene salvato in formato FLAC ottimizzato per la trascrizione e puo' essere trascritto automaticamente via Groq Whisper API.
+Scarica l'audio delle lezioni registrate da SharePoint UniBo. L'audio viene salvato in formato FLAC ottimizzato per la trascrizione e puo' essere trascritto automaticamente via Groq Whisper API.
 
 ## Come funziona
 
