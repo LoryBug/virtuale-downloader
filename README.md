@@ -1,6 +1,6 @@
 # virtuale-downloader
 
-Scarica l'audio delle lezioni registrate da SharePoint UniBo, anche quando il download e' disabilitato dal docente. L'audio viene salvato in formato FLAC ottimizzato per la trascrizione.
+Scarica l'audio delle lezioni registrate da SharePoint UniBo, anche quando il download e' disabilitato dal docente. L'audio viene salvato in formato FLAC ottimizzato per la trascrizione e puo' essere trascritto automaticamente via Groq Whisper API.
 
 ## Come funziona
 
@@ -23,6 +23,13 @@ git clone <repo-url>
 cd virtuale-downloader
 uv sync
 uv run playwright install chromium
+```
+
+Per la trascrizione, crea un file `.env` con la tua chiave Groq (vedi `.env.example`):
+
+```bash
+cp .env.example .env
+# Inserisci la tua GROQ_API_KEY
 ```
 
 ## Uso
@@ -54,6 +61,42 @@ Il file deve contenere un URL per riga. Le righe vuote e quelle che iniziano con
 - `https://liveunibo.sharepoint.com/.../stream.aspx?id=/sites/.../video.mp4`
 - `https://liveunibo.sharepoint.com/:v:/s/NomeCorso/...`
 
+## Trascrizione
+
+Dopo aver scaricato i FLAC, puoi trascriverli automaticamente con Groq Whisper API:
+
+```bash
+# Trascrive tutti i FLAC in downloads/ -> JSON con segmenti timestampati
+uv run transcribe.py
+
+# Converte i JSON trascritti in TXT (solo testo piano)
+uv run transcribe.py --flatten
+
+# Trascrive + flatten in un colpo
+uv run transcribe.py --all
+```
+
+Lo script gestisce automaticamente:
+- Split dei file grandi (>25MB) con FFmpeg e re-encode FLAC
+- Retry con backoff esponenziale su errori di connessione
+- Filtro anti-allucinazioni Whisper (musica, sottotitoli fantasma, etc.)
+- Skip dei file gia' trascritti
+
+### Configurazione (.env)
+
+| Variabile | Default | Descrizione |
+|-----------|---------|-------------|
+| `GROQ_API_KEY` | - | Chiave API Groq (obbligatoria) |
+| `GROQ_SPLIT_THRESHOLD_MB` | `25` | Soglia split in MB (free: 25, dev: 100) |
+| `WHISPER_LANGUAGE` | `it` | Lingua trascrizione |
+| `HALLUCINATION_MAX_WORDS` | `10` | Soglia parole per filtro allucinazioni |
+| `HALLUCINATION_MIN_DURATION` | `2.5` | Durata minima segmento (secondi) |
+
 ## Output
 
-I file FLAC vengono salvati nella cartella `downloads/`. La sessione del browser viene salvata in `.browser_data/` per non dover rifare il login ogni volta.
+I file vengono salvati nella cartella `downloads/`:
+- `*.flac` - Audio scaricato
+- `*_transcription.json` - Trascrizione con segmenti timestampati
+- `*.txt` - Testo piano (dopo flatten)
+
+La sessione del browser viene salvata in `.browser_data/` per non dover rifare il login ogni volta.

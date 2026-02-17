@@ -13,5 +13,8 @@ wheels/
 .browser_data/
 downloads/
 
+# Secrets
+.env
+
 # IDE / tools
 .claude/
