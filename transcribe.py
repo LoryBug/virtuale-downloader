@@ -34,6 +34,7 @@ HALLUCINATION_MAX_WORDS = int(os.getenv("HALLUCINATION_MAX_WORDS", "10"))
 HALLUCINATION_MIN_DURATION = float(os.getenv("HALLUCINATION_MIN_DURATION", "2.5"))
 
 DOWNLOADS_DIR = Path(__file__).parent / "downloads"
+TRANSCRIPTIONS_DIR = DOWNLOADS_DIR / "transcriptions"
 MAX_FILE_SIZE_MB = 100
 MAX_PART_RETRIES = 3
 RETRY_BASE_DELAY = 2  # seconds
@@ -316,15 +317,16 @@ def flatten_json(json_path: Path) -> str:
 
 
 def do_flatten():
-    """Converte tutti i JSON in downloads/ in file TXT."""
-    json_files = sorted(DOWNLOADS_DIR.glob("*_transcription.json"))
+    """Converte tutti i JSON in downloads/transcriptions/ in file TXT."""
+    TRANSCRIPTIONS_DIR.mkdir(exist_ok=True)
+    json_files = sorted(TRANSCRIPTIONS_DIR.glob("*_transcription.json"))
     if not json_files:
-        print("Nessun file JSON di trascrizione trovato in downloads/")
+        print("Nessun file JSON di trascrizione trovato in downloads/transcriptions/")
         return
 
     for json_file in json_files:
         txt_name = json_file.name.replace("_transcription.json", ".txt")
-        txt_path = DOWNLOADS_DIR / txt_name
+        txt_path = TRANSCRIPTIONS_DIR / txt_name
 
         text = flatten_json(json_file)
         txt_path.write_text(text, encoding="utf-8")
@@ -339,6 +341,7 @@ def do_flatten():
 
 def do_transcribe():
     """Trascrive tutti i FLAC in downloads/."""
+    TRANSCRIPTIONS_DIR.mkdir(exist_ok=True)
     flac_files = sorted(DOWNLOADS_DIR.glob("*.flac"))
     if not flac_files:
         print("Nessun file FLAC trovato in downloads/")
@@ -349,7 +352,7 @@ def do_transcribe():
     for f in flac_files:
         if f.stem.endswith("_part"):
             continue
-        json_path = DOWNLOADS_DIR / f"{f.stem}_transcription.json"
+        json_path = TRANSCRIPTIONS_DIR / f"{f.stem}_transcription.json"
         if json_path.exists():
             print(f"  Gia' trascritto: {f.name}, salto.")
         else:
@@ -367,7 +370,7 @@ def do_transcribe():
         result = transcribe_file(client, flac_file)
 
         if result:
-            json_path = DOWNLOADS_DIR / f"{flac_file.stem}_transcription.json"
+            json_path = TRANSCRIPTIONS_DIR / f"{flac_file.stem}_transcription.json"
             with open(json_path, "w", encoding="utf-8") as f:
                 json.dump(result, f, ensure_ascii=False, indent=2)
             print(f"  Salvato: {json_path.name}")
@@ -378,6 +381,7 @@ def do_transcribe():
 
 def main():
     DOWNLOADS_DIR.mkdir(exist_ok=True)
+    TRANSCRIPTIONS_DIR.mkdir(exist_ok=True)
 
     args = sys.argv[1:]
 

@@ -92,11 +92,37 @@ Lo script gestisce automaticamente:
 | `HALLUCINATION_MAX_WORDS` | `10` | Soglia parole per filtro allucinazioni |
 | `HALLUCINATION_MIN_DURATION` | `2.5` | Durata minima segmento (secondi) |
 
+## Conversione MP3
+
+Dopo aver scaricato i FLAC, puoi convertirli in MP3:
+
+```bash
+# Converte tutti i FLAC in downloads/ -> MP3 in downloads/mp3/
+uv run convert_mp3.py
+
+# Bitrate personalizzato (default: 192kbps)
+uv run convert_mp3.py --bitrate 320
+
+# Elimina i FLAC originali dopo la conversione
+uv run convert_mp3.py --delete
+```
+
+### Uso con NotebookLM
+
+Se vuoi usare [NotebookLM](https://notebooklm.google.com/) per studiare le lezioni, non serve la trascrizione: basta convertire i FLAC in MP3 e caricare direttamente i file MP3 come sorgenti nel notebook. NotebookLM trascrive e indicizza l'audio automaticamente.
+
+```bash
+uv run main.py                    # scarica le lezioni
+uv run convert_mp3.py --delete    # converti in MP3 (ed elimina i FLAC)
+# -> carica i file da downloads/mp3/ su NotebookLM
+```
+
 ## Output
 
 I file vengono salvati nella cartella `downloads/`:
 - `*.flac` - Audio scaricato
-- `*_transcription.json` - Trascrizione con segmenti timestampati
-- `*.txt` - Testo piano (dopo flatten)
+- `transcriptions/*_transcription.json` - Trascrizione con segmenti timestampati
+- `transcriptions/*.txt` - Testo piano (dopo flatten)
+- `mp3/*.mp3` - Audio convertito in MP3
 
 La sessione del browser viene salvata in `.browser_data/` per non dover rifare il login ogni volta.
